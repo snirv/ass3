@@ -78,6 +78,14 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
 
+  case T_PGFLT://2.2
+      if ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0)){
+          uint va = rcr2();
+          if(page_in(va)!= -1){
+              break;
+          }
+      }
+
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){

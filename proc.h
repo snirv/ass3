@@ -1,3 +1,7 @@
+#define MAX_TOTAL_PAGES 32
+#define MAX_PSYC_PAGES 16
+
+
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -50,8 +54,17 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  //Swap file. must initiate with create swap file
-  struct file *swapFile;      //page file
+
+    //Swap file. must initiate with create swap file
+    struct file *swapFile;      //page file
+    //PCB meta-data
+    uint pysc_pages_num;          // number of physic pages the process holds added 2.1
+    uint swaped_pages_num;         // number of swaped pages the process holds added 2.1
+
+    //swaped_pages_array - an array to hold the pte's of the pages in the swapFile 2.1
+    pte_t** swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
+
+
 };
 
 // Process memory is laid out contiguously, low addresses first:
