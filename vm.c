@@ -230,6 +230,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   if(newsz < oldsz)
     return oldsz;
 
+//todo check if need to block init and sh
 
 
   a = PGROUNDUP(oldsz);

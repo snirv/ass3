@@ -29,6 +29,24 @@ exec(char *path, char **argv)
   ilock(ip);
   pgdir = 0;
 
+  //backup and init values
+  uint swaped_pages_num_bkp = curproc->swaped_pages_num;
+  uint pysc_pages_num_bkp = curproc->pysc_pages_num;
+  curproc->pysc_pages_num = 0;
+  curproc->swaped_pages_num=0;
+//todo back up DS
+
+    pte_t** swaped_pages_arr_bkp[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
+
+  for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES); i++){
+    swaped_pages_arr_bkp[i] = curproc->swaped_pages_arr[i];
+    curproc->swaped_pages_arr[i] = 0;
+
+  }
+
+
+
+
   // Check ELF header
   if(readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
     goto bad;
@@ -99,8 +117,15 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
+
+  //remove and create new swap file 2.3
+  removeSwapFile(curproc);
+  createSwapFile(curproc);
+
   switchuvm(curproc);
   freevm(oldpgdir);
+
+
   return 0;
 
  bad:
@@ -110,5 +135,16 @@ exec(char *path, char **argv)
     iunlockput(ip);
     end_op();
   }
+
+  // using backup to restore
+  curproc->pysc_pages_num = pysc_pages_num_bkp;
+  curproc->swaped_pages_num = swaped_pages_num_bkp;
+
+
+ //todo restore DS
+  for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES) ; i++){
+    curproc->swaped_pages_arr[i] = swaped_pages_arr_bkp[i];
+  }
+
   return -1;
 }

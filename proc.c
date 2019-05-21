@@ -88,6 +88,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+    p->pysc_pages_num = 0;//2.3
+    p->swaped_pages_num = 0;
+    //todo init data sturcture
 
   release(&ptable.lock);
 
@@ -200,6 +203,35 @@ fork(void)
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
+    //create new swap file for the new proc 2.3
+    createSwapFile(np);
+    // if not sh or init copy swap file and data structure
+    if((namecmp(curproc->name, "init") != 0) && (namecmp(curproc->name, "sh") != 0)){
+        np->pysc_pages_num = curproc->pysc_pages_num;
+        np->swaped_pages_num = curproc->swaped_pages_num;
+
+
+
+        //todo copy DS
+        //copy swaped page arr
+        for( i=0; i<curproc->swaped_pages_num; i++){
+            np->swaped_pages_arr[i] = curproc->swaped_pages_arr[i];
+        }
+
+        // copy the swap file
+        // stack is page size so buf is pgsize/2
+        char buf[PGSIZE/2];
+        int byte_read;
+        int offset = 0;
+        while((byte_read = readFromSwapFile(curproc, (char *)buf, offset, PGSIZE/2)) > 0){
+            if(writeToSwapFile(np, (char *)buf, offset, byte_read) < 0){
+                panic("writeToSwapFile failed on fork\n");
+            }
+            offset += byte_read;
+        }
+
+    }
+
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -246,7 +278,8 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
-
+    // remove swap file 2.3
+    removeSwapFile(curproc);
   acquire(&ptable.lock);
 
   // Parent might be sleeping in wait().
