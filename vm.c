@@ -8,9 +8,10 @@
 #include "elf.h"
 
 
-uint
-get_page_index (pte_t* pte);
-
+int
+get_page_index_in_swap_arr(pte_t *pte);
+int insert_to_pysc_arr(pte_t* pte , int index_to_insert);
+int get_index_in_pysc_arr(pte_t* pte);
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -234,22 +235,29 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   if(newsz < oldsz)
     return oldsz;
 
-//todo check if need to block init and sh
+//todo check if need to block init and sh + check pgdir
 
 
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
+      //#if SELECTION != NONE
+      if(p->pgdir == pgdir) {
+          if (p->pysc_pages_num + p->swaped_pages_num == MAX_TOTAL_PAGES) { // proc cannot pass 32 pages total 2.1
+              return 0;
+          }
+          pte_t *pte = (walkpgdir(myproc()->pgdir, (void *) PGROUNDDOWN((uint) a), 0));
+          if (p->pysc_pages_num == MAX_PSYC_PAGES) { // max pysc pages -- need to swap
+              int index_of_page_in_pysc_arr = page_out(0, 0); // 0,0 - page out swap to any index in swap file , in this case swap file must still have place
+              insert_to_pysc_arr(pte, index_of_page_in_pysc_arr);
 
-      if(p->pysc_pages_num + p->swaped_pages_num == MAX_TOTAL_PAGES){ // proc cannot pass 32 pages total 2.1
-          return 0;
+          } else {
+              int index_to_insert = p->pysc_pages_num;
+              insert_to_pysc_arr(pte, index_to_insert);
+              p->pysc_pages_num++;
+          }
       }
-      if(p->pysc_pages_num == MAX_PSYC_PAGES){ // max pysc pages -- need to swap
-          page_out(0,0);
+     // #endif
 
-      } else{
-          p->pysc_pages_num++;
-          //TODO upsate structure
-      }
       mem = kalloc();
     if(mem == 0){
       cprintf("allocuvm out of memory\n");
@@ -411,13 +419,15 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 
 //finds used page in page dir and write it to swap file - page out
+//return -1 upon failure and the index of the page that was paged out in the pysc arr
 int
 page_out(int to_swap , int index_to_swap) {
 
     struct proc *p = myproc();
 
     //find a page to page out
-    pte_t *pte_to_page_out = find_used_page(p);//todo in task 3
+    pte_t *pte_to_page_out = get_page_to_page_out(p);//todo in task 3
+    int index_in_pysc_arr = get_index_in_pysc_arr(pte_to_page_out); // a place for the new page in the pysc arr
     // todo remove pre from pysc arr and insert the pte that need to get in from swap file
 
     if (writeToSwapFile(p, (char *) PTE_ADDR(*pte_to_page_out), p->swaped_pages_num * PGSIZE, PGSIZE) == -1) {
@@ -434,13 +444,30 @@ page_out(int to_swap , int index_to_swap) {
 
   //set flags
   *pte_to_page_out = *pte_to_page_out | PTE_PG ; //todo should we turn off PTE_P
+  *pte_to_page_out = *pte_to_page_out & (~PTE_P) ;
+
   //free the page that was paged out
   kfree((char*)PTE_ADDR(*pte_to_page_out));
     lcr3(V2P(p->pgdir));// refresh the tlb
 
 
+    return index_in_pysc_arr;
 }
 
+
+//// get a va that was paged out and load it back to the pysc mem
+//// need to swap "rosh be rosh" with page in the pysc mem
+
+/*
+ * 1. check if the page was paged out or just sgm fault
+ * 2.kalloc mem
+ * 3. copy page to mem
+ * 4. page out another page from pysc to the index of old one in swap file (remove the old file from pysc arr)
+ * 5. map mem to pgdir
+ * 6. add a pte to pysc page
+ *
+ * return -1 upon failure and 1 for success
+ */
 int
 page_in(uint va){
   struct proc* p = myproc();
@@ -457,8 +484,11 @@ page_in(uint va){
   memset(mem, 0, PGSIZE);
 
   //get page from swap file
-  int swap_index =  get_page_index(pte);
-  uint place_on_file = swap_index * PGSIZE;
+  int swap_index = get_page_index_in_swap_arr(pte);
+    if(swap_index == -1){
+        panic("failed to swap in page in\n");
+    }
+  uint place_on_file = (uint)swap_index * PGSIZE;
   readFromSwapFile(p,mem,place_on_file ,PGSIZE);
   //TODO update data strucute
 
@@ -478,7 +508,40 @@ page_in(uint va){
 
 }
 
-// 1.1
+
+int get_page_index_in_swap_arr(pte_t *pte){  //sharon added
+    struct proc* p = myproc();
+    for (int i=0; i< p->swaped_pages_num; i++){
+        if (p->swaped_pages_arr[i].pte == pte){
+            return i;
+        }
+    }
+    return -1;
+}
+
+
+int insert_to_pysc_arr(pte_t* pte , int index_to_insert){
+    struct pysc_page page;
+    page.pte = pte;
+    page.age = 0;
+    page.creation_time = 0;
+    page.used = 0;
+    //todo check values
+    myproc()->pysc_page_arr[index_to_insert] = page;
+}
+
+
+int get_index_in_pysc_arr(pte_t* pte){
+    struct proc* p = myproc();
+    for (int i=0; i < p->pysc_pages_num; i++){
+        if(pte == p->pysc_page_arr[i].pte){
+            return i;
+        }
+    }
+    return -1;
+}
+
+// 1.1 syscalls
 int
 turn_on_p_flag(void* va){
     pte_t* pte;
@@ -531,17 +594,33 @@ is_w_flag_off(void* va){
 }
 
 
+int
+is_p_flag_on(void* va){
+    pte_t* pte;
 
-
-
-
-
-uint get_page_index(pte_t * pte){  //sharon added
-    struct proc* p = myproc();
-    for (int i=0; i< (MAX_TOTAL_PAGES-MAX_PSYC_PAGES); i++){
-        if (p->swaped_pages_arr[i].pte == pte){
-            return i;
-        }
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else if((*pte & PTE_W) != 0){
+        return 1;
+    } else{
+        return 0;
     }
-    return -1;
+}
+
+//3.0
+
+pte_t* get_page_to_page_out(struct proc* p){
+
+    int index = 0;
+#if SELECTION == LIFO
+
+#endif
+
+
+#if SELECTION == SCFIFO
+
+#endif
+
+    return index;
 }

@@ -2,20 +2,6 @@
 #define MAX_PSYC_PAGES 16
 
 
-struct pysc_page
-{
-    pte_t* pte;            // PTE that mapped to the pa
-    int used;             // 1 if this page is used, 0 otherwise
-    int creation_time;    // counts ticks passed from creation time
-    uint age;             // counts ticks from last access time (depends on policy)
-};
-
-
-struct swap_page
-{
-    pte_t* pte;            // PTE that mapped to the pa
-};
-
 
 // Per-CPU state
 struct cpu {
@@ -52,6 +38,24 @@ struct context {
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+
+
+
+struct pysc_page
+{
+    pte_t* pte;            // PTE that mapped to the pa
+    int used;             // 1 if this page is used, 0 otherwise
+    int creation_time;    // counts ticks passed from creation time
+    uint age;             // counts ticks from last access time (depends on policy)
+};
+
+
+struct swap_page
+{
+    pte_t* pte;            // PTE that mapped to the pa
+};
+
+
 
 // Per-process state
 struct proc {
