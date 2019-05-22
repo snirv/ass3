@@ -104,6 +104,12 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_yield(void);
+extern int sys_turn_on_p_flag(void);
+extern int sys_turn_off_w_flag(void);
+extern int sys_turn_on_w_flag(void);
+extern int sys_is_w_flag_off(void);
+extern int sys_is_p_flag_on(void);
+
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -128,6 +134,11 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_yield]   sys_yield,
+[SYS_turn_on_p_flag]   sys_turn_on_p_flag,
+[SYS_turn_off_w_flag]   sys_turn_off_w_flag,
+[SYS_turn_on_w_flag]   sys_turn_on_w_flag,
+[SYS_is_w_flag_off]   sys_is_w_flag_off,
+[SYS_is_p_flag_on]   sys_is_p_flag_on,
 };
 
 void
@@ -145,3 +156,6 @@ syscall(void)
     curproc->tf->eax = -1;
   }
 }
+
+
+

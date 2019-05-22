@@ -25,6 +25,18 @@ int sleep(int);
 int uptime(void);
 int yield(void);
 
+//pmalloc
+int turn_on_p_flag(void*);  //1.1 turn on protected flag for page  - means that page wa alloced using pmalloc
+
+
+//protect_page
+int is_p_flag_on(void*);  //1.1
+int turn_off_w_flag(void*);  //1.1 turn off write flag for page
+
+//pfree
+int turn_on_w_flag(void*);  //1.1 turn on write flag for page
+int is_w_flag_off(void*);  //1.1
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);
@@ -38,3 +50,4 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+

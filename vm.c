@@ -426,7 +426,7 @@ page_out(){
   //set flags
   *page_to_page_out = *page_to_page_out | PTE_PG ; //todo should we turn off PTE_P
   //free the page that was paged out
-  kfree((char*)PTE_ADDR(*page_to_page_out));
+  kfree((char*)PTE_ADDR(*page_to_page_out)); // todo add p2v
     lcr3(V2P(p->pgdir));// refresh the tlb
 
 
@@ -464,3 +464,59 @@ page_in(uint va){
   }
 
 }
+
+// 1.1
+int
+turn_on_p_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte | PTE_PRTC;
+    }
+
+}
+
+int
+turn_off_w_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte & (~PTE_W);
+    }
+}
+
+int
+turn_on_w_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte |PTE_W;
+    }
+}
+
+int
+is_w_flag_off(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else if((*pte & PTE_W) == 0){
+        return 1;
+    } else{
+        return 0;
+    }
+}
+
+
+
+

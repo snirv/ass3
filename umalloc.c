@@ -88,3 +88,29 @@ malloc(uint nbytes)
         return 0;
   }
 }
+
+
+void* pmalloc(){
+//todo
+}
+
+
+int protect_page(void* ap){
+  if (is_p_flag_on(ap)) {
+    return turn_off_w_flag(ap);
+  } else{
+    return -1;
+  }
+}
+
+
+int pfree(void* ap){
+  if(!is_p_flag_on(ap)){ // only use on pages alloced by palloc
+    return -1;
+  }
+  if(is_w_flag_off(ap)){ // if page protected turn - unprotect before free - otherwise free will fail
+    turn_on_w_flag(ap);
+  }
+  free(ap);
+
+}

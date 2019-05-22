@@ -195,5 +195,13 @@ int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 int             page_out(void);
 int             page_in(uint va);
+int             turn_on_p_flag(void* va);
+int             turn_off_w_flag(void* va);
+int             turn_on_w_flag(void* va);
+int             is_w_flag_off(void* va);
+int             is_p_flag_on(void* va);
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+
+

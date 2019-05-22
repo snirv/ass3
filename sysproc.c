@@ -96,3 +96,75 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_turn_on_p_flag(void){
+
+  void *va;
+
+  if (argptr(0, (void *) &va, sizeof(va)) < 0){
+    return -1;
+  }
+
+  return turn_on_p_flag(va);
+
+}
+
+
+int
+sys_turn_off_w_flag(void){
+
+  void *va;
+
+  if (argptr(0, (void *) &va, sizeof(va)) < 0){
+    return -1;
+  }
+
+  return turn_off_w_flag(va);
+
+}
+
+
+int
+sys_turn_on_w_flag(void){
+
+  void *va;
+
+  if (argptr(0, (void *) &va, sizeof(va)) < 0){
+    return -1;
+  }
+
+  return turn_on_w_flag(va);
+
+}
+
+
+
+int
+sys_is_w_flag_off(void){
+
+  void *va;
+
+  if (argptr(0, (void *) &va, sizeof(va)) < 0){
+    return -1;
+  }
+
+  return is_w_flag_off(va);
+
+}
+
+int
+sys_is_p_flag_on(void){
+
+  void *va;
+
+  if (argptr(0, (void *) &va, sizeof(va)) < 0){
+    return -1;
+  }
+
+  return is_p_flag_on(va);
+
+}
+
+
+
