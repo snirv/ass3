@@ -62,26 +62,26 @@ struct proc {
     uint swaped_pages_num;         // number of swaped pages the process holds added 2.1
 
     //swaped_pages_array - an array to hold the pte's of the pages in the swapFile 2.1
-    struct page swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES]; //sharon changed
+    struct swap_page swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES]; //sharon changed
 
-    struct page  pysc_page_arr[MAX_PSYC_PAGES];  // will store data on all pages (RAM & DISK)
-//    int pgflt_counter;                                // number of pagefaults
-//    int pgout_counter;                                // number of pageouts
-//    int used_file[MAX_PSYC_PAGES];                                // index (?) of page in frames
+    struct pysc_page  pysc_page_arr[MAX_PSYC_PAGES];  // will store data on all pages (RAM & DISK)d
+
 };
 
 
-
-
-
-struct page
+struct pysc_page
 {
     pte_t* pte;            // PTE that mapped to the pa
-    uint va;              // page va
-    int swapFile_offset;  // -1 if not in swapFile, offset (0-14) in swapFile otherwise
     int used;             // 1 if this page is used, 0 otherwise
     int creation_time;    // counts ticks passed from creation time
     uint age;             // counts ticks from last access time (depends on policy)
+};
+
+
+struct swap_page
+{
+    pte_t* pte;            // PTE that mapped to the pa
+    int swapFile_offset;  // -1 if not in swapFile, offset (0-14) in swapFile otherwise
 };
 
 // Process memory is laid out contiguously, low addresses first:
