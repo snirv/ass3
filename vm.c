@@ -8,6 +8,10 @@
 #include "elf.h"
 
 
+uint
+get_page_index (pte_t* pte);
+
+
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
 
@@ -240,9 +244,11 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
           return 0;
       }
       if(p->pysc_pages_num == MAX_PSYC_PAGES){ // max pysc pages -- need to swap
-          page_out();
+          page_out(0,0);
+
       } else{
           p->pysc_pages_num++;
+          //TODO upsate structure
       }
       mem = kalloc();
     if(mem == 0){
@@ -406,27 +412,30 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 //finds used page in page dir and write it to swap file - page out
 int
-page_out(){
+page_out(int to_swap , int index_to_swap) {
 
-    struct proc* p = myproc();
+    struct proc *p = myproc();
 
     //find a page to page out
-    pte_t* page_to_page_out = find_used_page();//todo
-//    int i;
-//    for(i = 0; i < KERNBASE; i ++) {
-//
-//    }
+    pte_t *pte_to_page_out = find_used_page(p);//todo in task 3
+    // todo remove pre from pysc arr and insert the pte that need to get in from swap file
 
-    if(writeToSwapFile(p, (char*)PTE_ADDR(*page_to_page_out), p->swaped_pages_num*PGSIZE ,PGSIZE) == -1){
-      panic("page out fail on writeToSwapFile\n");
+    if (writeToSwapFile(p, (char *) PTE_ADDR(*pte_to_page_out), p->swaped_pages_num * PGSIZE, PGSIZE) == -1) {
+        panic("page out fail on writeToSwapFile\n");
     }
-    *p->swaped_pages_arr[p->swaped_pages_num]= page_to_page_out;
-    p->swaped_pages_num++;
+
+    if (to_swap) {
+        p->swaped_pages_arr[index_to_swap].pte = pte_to_page_out; //sharon changed
+    } else {
+        p->swaped_pages_arr[p->swaped_pages_num].pte = pte_to_page_out; //sharon changed
+        p->swaped_pages_num++;
+    }
+
 
   //set flags
-  *page_to_page_out = *page_to_page_out | PTE_PG ; //todo should we turn off PTE_P
+  *pte_to_page_out = *pte_to_page_out | PTE_PG ; //todo should we turn off PTE_P
   //free the page that was paged out
-  kfree((char*)PTE_ADDR(*page_to_page_out));
+  kfree((char*)PTE_ADDR(*pte_to_page_out));
     lcr3(V2P(p->pgdir));// refresh the tlb
 
 
@@ -448,13 +457,17 @@ page_in(uint va){
   memset(mem, 0, PGSIZE);
 
   //get page from swap file
-  uint place_on_file = get_page_offset(pte);
+  int swap_index =  get_page_index(pte);
+  uint place_on_file = swap_index * PGSIZE;
   readFromSwapFile(p,mem,place_on_file ,PGSIZE);
-  //todo update data strucute
+  //TODO update data strucute
+
+
 
     // if psyc mem is full do page out
   if (p->pysc_pages_num == MAX_PSYC_PAGES) {
-    page_out();
+      int to_swap = 1;
+      page_out(to_swap, swap_index);
   }
 
   //map kalloc to va
@@ -463,4 +476,15 @@ page_in(uint va){
     panic("mappages faild in page_in");
   }
 
+}
+
+
+uint get_page_index(pte_t * pte){  //sharon added
+    struct proc* p = myproc();
+    for (int i=0; i< (MAX_TOTAL_PAGES-MAX_PSYC_PAGES); i++){
+        if (p->swaped_pages_arr[i].pte == pte){
+            return i;
+        }
+    }
+    return -1;
 }
