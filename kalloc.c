@@ -9,6 +9,10 @@
 #include "mmu.h"
 #include "spinlock.h"
 
+extern int total_pages;
+extern int current_free_page;
+
+
 void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
                    // defined by the kernel linker script in kernel.ld
@@ -31,6 +35,8 @@ struct {
 void
 kinit1(void *vstart, void *vend)
 {
+  total_pages= 0;
+  current_free_page = 0;
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
   freerange(vstart, vend);
@@ -41,6 +47,7 @@ kinit2(void *vstart, void *vend)
 {
   freerange(vstart, vend);
   kmem.use_lock = 1;
+  total_pages = current_free_page ; //task 4 kernel finished loading, curr is total
 }
 
 void
@@ -72,6 +79,7 @@ kfree(char *v)
   r = (struct run*)v;
   r->next = kmem.freelist;
   kmem.freelist = r;
+  current_free_page++; //task 4 sharon added - inc free page
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -89,6 +97,7 @@ kalloc(void)
   r = kmem.freelist;
   if(r)
     kmem.freelist = r->next;
+  current_free_page--; //task 4 sharon added- dec free page
   if(kmem.use_lock)
     release(&kmem.lock);
   return (char*)r;

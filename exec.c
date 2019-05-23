@@ -33,9 +33,16 @@ exec(char *path, char **argv)
   uint swaped_pages_num_bkp = curproc->swaped_pages_num;
   uint pysc_pages_num_bkp = curproc->pysc_pages_num;
   int creation_counter = curproc->creation_counter;
+  int pgflt_num_bkp = curproc->pgflt_num;
+  int page_out_num_bkp = curproc->page_out_num;
+  int protectes_pg_num_bkp = curproc->protectes_pg_num;
   curproc->creation_counter = 0;
   curproc->pysc_pages_num = 0;
-  curproc->swaped_pages_num=0;
+  curproc->swaped_pages_num = 0;
+  curproc->pgflt_num = 0;
+  curproc->page_out_num = 0;
+  curproc->protectes_pg_num= 0;
+
 
     struct swap_page swaped_pages_arr_bkp[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
 
@@ -146,6 +153,9 @@ exec(char *path, char **argv)
   curproc->pysc_pages_num = pysc_pages_num_bkp;
   curproc->swaped_pages_num = swaped_pages_num_bkp;
   curproc->creation_counter = creation_counter;
+  curproc->pgflt_num = pgflt_num_bkp;
+  curproc->page_out_num = page_out_num_bkp;
+  curproc->protectes_pg_num= protectes_pg_num_bkp;
 
 
     for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES); i++){

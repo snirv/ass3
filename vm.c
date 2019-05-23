@@ -255,7 +255,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
           } else {
               int index_to_insert = p->pysc_pages_num;
               insert_to_pysc_arr(pte, index_to_insert);
-              p->pysc_pages_num++;
+              //p->pysc_pages_num++;
           }
       }
      // #endif
@@ -426,9 +426,10 @@ int
 page_out(int to_swap , int index_to_swap) {
 
     struct proc *p = myproc();
+    p->page_out_num++;
 
     //find a page to page out
-    pte_t *pte_to_page_out = get_page_to_page_out(p);//todo in task 3
+    pte_t *pte_to_page_out = get_page_to_page_out(p);
     int index_in_pysc_arr = get_index_in_pysc_arr(pte_to_page_out); // a place for the new page in the pysc arr
     // todo remove pre from pysc arr and insert the pte that need to get in from swap file
 
@@ -437,9 +438,9 @@ page_out(int to_swap , int index_to_swap) {
     }
 
     if (to_swap) {
-        p->swaped_pages_arr[index_to_swap].pte = pte_to_page_out; //sharon changed
+        p->swaped_pages_arr[index_to_swap].pte = pte_to_page_out;
     } else {
-        p->swaped_pages_arr[p->swaped_pages_num].pte = pte_to_page_out; //sharon changed
+        p->swaped_pages_arr[p->swaped_pages_num].pte = pte_to_page_out;
         p->swaped_pages_num++;
     }
 
@@ -531,6 +532,7 @@ void insert_to_pysc_arr(pte_t* pte , int index_to_insert){
     page.pte = pte;
     page.creation_time = myproc()->creation_counter++;
     myproc()->pysc_page_arr[index_to_insert] = page;
+    myproc()->pysc_pages_num++;
 }
 
 

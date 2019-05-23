@@ -210,6 +210,9 @@ fork(void)
         np->pysc_pages_num = curproc->pysc_pages_num;
         np->swaped_pages_num = curproc->swaped_pages_num;
         np->creation_counter = curproc->creation_counter;
+        np->protectes_pg_num = curproc->protectes_pg_num;
+        np->page_out_num =0;
+        np->pgflt_num =0;
 
 
         //copy pysc page arr
@@ -335,6 +338,9 @@ wait(void)
         p->creation_counter = 0;
         p->pysc_pages_num = 0;
         p->swaped_pages_num = 0;
+        p->pgflt_num = 0;
+        p->protectes_pg_num = 0;
+        p->page_out_num = 0;
         memset(p->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
         memset(p->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
         p->state = UNUSED;
@@ -566,7 +572,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -574,4 +580,5 @@ procdump(void)
     }
     cprintf("\n");
   }
+    cprintf("%d /%d free pages in the system\n", current_free_page , total_pages);
 }
