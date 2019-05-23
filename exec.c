@@ -32,19 +32,25 @@ exec(char *path, char **argv)
   //backup and init values
   uint swaped_pages_num_bkp = curproc->swaped_pages_num;
   uint pysc_pages_num_bkp = curproc->pysc_pages_num;
+  int creation_counter = curproc->creation_counter;
+  curproc->creation_counter = 0;
   curproc->pysc_pages_num = 0;
   curproc->swaped_pages_num=0;
-//todo back up DS
 
-    pte_t** swaped_pages_arr_bkp[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
+    struct swap_page swaped_pages_arr_bkp[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
 
-  for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES); i++){
-    swaped_pages_arr_bkp[i] = curproc->swaped_pages_arr[i];
-    curproc->swaped_pages_arr[i] = 0;
+    for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES); i++){
+        swaped_pages_arr_bkp[i] = curproc->swaped_pages_arr[i];
+    }
+
+    struct pysc_page pysc_pages_arr_bkp[MAX_PSYC_PAGES];
+
+  for( i = 0 ; i< (MAX_PSYC_PAGES); i++){
+      pysc_pages_arr_bkp[i] = curproc->pysc_page_arr[i];
 
   }
-
-
+    memset(curproc->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
+    memset(curproc->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
 
 
   // Check ELF header
@@ -139,12 +145,17 @@ exec(char *path, char **argv)
   // using backup to restore
   curproc->pysc_pages_num = pysc_pages_num_bkp;
   curproc->swaped_pages_num = swaped_pages_num_bkp;
+  curproc->creation_counter = creation_counter;
 
 
- //todo restore DS
-  for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES) ; i++){
-    curproc->swaped_pages_arr[i] = swaped_pages_arr_bkp[i];
-  }
+    for( i = 0 ; i< (MAX_TOTAL_PAGES - MAX_PSYC_PAGES); i++){
+        curproc->swaped_pages_arr[i] = swaped_pages_arr_bkp[i] ;
+    }
+
+    for( i = 0 ; i< (MAX_PSYC_PAGES); i++){
+        curproc->pysc_page_arr[i] = pysc_pages_arr_bkp[i];
+
+    }
 
   return -1;
 }

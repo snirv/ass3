@@ -10,8 +10,10 @@
 
 int
 get_page_index_in_swap_arr(pte_t *pte);
-int insert_to_pysc_arr(pte_t* pte , int index_to_insert);
+void insert_to_pysc_arr(pte_t* pte , int index_to_insert);
 int get_index_in_pysc_arr(pte_t* pte);
+pte_t* get_page_to_page_out(struct proc* p);
+int find_page_min_creation(struct proc* p);
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -443,11 +445,11 @@ page_out(int to_swap , int index_to_swap) {
 
 
   //set flags
-  *pte_to_page_out = *pte_to_page_out | PTE_PG ; //todo should we turn off PTE_P
+  *pte_to_page_out = *pte_to_page_out | PTE_PG ;
   *pte_to_page_out = *pte_to_page_out & (~PTE_P) ;
 
   //free the page that was paged out
-  kfree((char*)PTE_ADDR(*pte_to_page_out));
+  kfree((char*)P2V(PTE_ADDR(*pte_to_page_out)));
     lcr3(V2P(p->pgdir));// refresh the tlb
 
 
@@ -460,7 +462,7 @@ page_out(int to_swap , int index_to_swap) {
 
 /*
  * 1. check if the page was paged out or just sgm fault
- * 2.kalloc mem
+ * 2. kalloc mem
  * 3. copy page to mem
  * 4. page out another page from pysc to the index of old one in swap file (remove the old file from pysc arr)
  * 5. map mem to pgdir
@@ -490,21 +492,25 @@ page_in(uint va){
     }
   uint place_on_file = (uint)swap_index * PGSIZE;
   readFromSwapFile(p,mem,place_on_file ,PGSIZE);
-  //TODO update data strucute
 
 
 
-    // if psyc mem is full do page out
-  if (p->pysc_pages_num == MAX_PSYC_PAGES) {
-      int to_swap = 1;
-      page_out(to_swap, swap_index);
-  }
+
+// if psyc mem is full do page out
+  int to_swap = 1;
+  int index_to_insert = page_out(to_swap, swap_index);
+
 
   //map kalloc to va
   if(mappages(p->pgdir, (char*)va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
     kfree(mem);
     panic("mappages faild in page_in");
   }
+    //update data strucute
+   insert_to_pysc_arr(pte,index_to_insert);
+
+
+    return 1;
 
 }
 
@@ -520,13 +526,10 @@ int get_page_index_in_swap_arr(pte_t *pte){  //sharon added
 }
 
 
-int insert_to_pysc_arr(pte_t* pte , int index_to_insert){
+void insert_to_pysc_arr(pte_t* pte , int index_to_insert){
     struct pysc_page page;
     page.pte = pte;
-    page.age = 0;
-    page.creation_time = 0;
-    page.used = 0;
-    //todo check values
+    page.creation_time = myproc()->creation_counter++;
     myproc()->pysc_page_arr[index_to_insert] = page;
 }
 
@@ -551,6 +554,7 @@ turn_on_p_flag(void* va){
         return -1;
     } else{
         *pte = *pte | PTE_PRTC;
+        return 0;
     }
 
 }
@@ -564,6 +568,7 @@ turn_off_w_flag(void* va){
         return -1;
     } else{
         *pte = *pte & (~PTE_W);
+        return 0;
     }
 }
 
@@ -576,6 +581,7 @@ turn_on_w_flag(void* va){
         return -1;
     } else{
         *pte = *pte |PTE_W;
+        return 0;
     }
 }
 
@@ -608,19 +614,75 @@ is_p_flag_on(void* va){
     }
 }
 
+
+
+int
+is_a_flag_on(pte_t* pte){
+    if (pte == 0){
+        return -1;
+    } else if((*pte & PTE_A) != 0){
+        return 1;
+    } else{
+        return 0;
+    }
+}
+
+int
+turn_off_a_flag(pte_t* pte){
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte & (~PTE_A);
+        return 0;
+    }
+}
+
+
+
+
 //3.0
 
 pte_t* get_page_to_page_out(struct proc* p){
 
     int index = 0;
 #if SELECTION == LIFO
-
+    int max =0;
+    for(int i=0; i< MAX_PSYC_PAGES ; i++ ){
+            if (p->pysc_page_arr[i].creation_time > max){
+                max = p->pysc_page_arr[i].creation_time;
+                index = i;
+            }
+    }
 #endif
 
 
 #if SELECTION == SCFIFO
 
+    index = find_page_min_creation(p);
+
+    while (is_a_flag_on(p->pysc_page_arr[index].pte)){
+        turn_off_a_flag(p->pysc_page_arr[index].pte);
+        p->pysc_page_arr[index].creation_time = myproc()->creation_counter++;
+        index= find_page_min_creation(p);
+    }
+
+
+
 #endif
 
-    return index;
+    return p->pysc_page_arr[index].pte;
+}
+
+
+int find_page_min_creation(struct proc* p){
+    int result = p->pysc_page_arr[0].creation_time;
+    for(int i=0; i< MAX_PSYC_PAGES ; i++ ){
+        if (p->pysc_page_arr[i].creation_time < result){
+            result = p->pysc_page_arr[i].creation_time;
+        }
+    }
+    return result;
+
+
+
 }

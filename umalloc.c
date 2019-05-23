@@ -92,6 +92,7 @@ malloc(uint nbytes)
 
 void* pmalloc(){
 //todo
+    return 0;
 }
 
 
@@ -112,5 +113,5 @@ int pfree(void* ap){
     turn_on_w_flag(ap);
   }
   free(ap);
-
+    return 0;
 }

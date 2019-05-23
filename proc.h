@@ -44,9 +44,7 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 struct pysc_page
 {
     pte_t* pte;            // PTE that mapped to the pa
-    int used;             // 1 if this page is used, 0 otherwise
     int creation_time;    // counts ticks passed from creation time
-    uint age;             // counts ticks from last access time (depends on policy)
 };
 
 
@@ -72,7 +70,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-
+  int creation_counter;        // global counter per proccess
 
     //Swap file. must initiate with create swap file
     struct file *swapFile;      //page file
@@ -81,7 +79,7 @@ struct proc {
     uint swaped_pages_num;         // number of swaped pages the process holds added 2.1
 
     //swaped_pages_array - an array to hold the pte's of the pages in the swapFile 2.1
-    struct swap_page swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES]; //sharon changed
+    struct swap_page swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
 
     struct pysc_page  pysc_page_arr[MAX_PSYC_PAGES];  // will store data on all pages (RAM & DISK)d
 

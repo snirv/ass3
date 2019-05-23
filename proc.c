@@ -88,9 +88,9 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-    p->pysc_pages_num = 0;//2.3
-    p->swaped_pages_num = 0;
-    //todo init data sturcture
+  p->pysc_pages_num = 0;//2.3
+  p->swaped_pages_num = 0;
+
 
   release(&ptable.lock);
 
@@ -209,10 +209,14 @@ fork(void)
     if((namecmp(curproc->name, "init") != 0) && (namecmp(curproc->name, "sh") != 0)){
         np->pysc_pages_num = curproc->pysc_pages_num;
         np->swaped_pages_num = curproc->swaped_pages_num;
+        np->creation_counter = curproc->creation_counter;
 
 
+        //copy pysc page arr
+        for( i=0; i<curproc->pysc_pages_num; i++){
+            np->pysc_page_arr[i] = curproc->pysc_page_arr[i];
+        }
 
-        //todo copy DS
         //copy swaped page arr
         for( i=0; i<curproc->swaped_pages_num; i++){
             np->swaped_pages_arr[i] = curproc->swaped_pages_arr[i];
@@ -327,6 +331,12 @@ wait(void)
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
+        //2.3 init
+        p->creation_counter = 0;
+        p->pysc_pages_num = 0;
+        p->swaped_pages_num = 0;
+        memset(p->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
+        memset(p->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
         p->state = UNUSED;
         release(&ptable.lock);
         return pid;
