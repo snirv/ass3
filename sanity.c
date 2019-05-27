@@ -1,13 +1,6 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
-#include "fs.h"
-#include "param.h"
-#include "fcntl.h"
-#include "syscall.h"
-#include "traps.h"
-#include "memlayout.h"
-#include "defs.h"
 
 
 #define TWOKB 2048
@@ -18,9 +11,6 @@
 int value = 12345678;
 char *mem;
 
-char * getMemoryAt(int i){
-    return mem + i * PGSIZE;
-}
 
 void* malloc_test(void){
     void *p = malloc(TWOKB);
@@ -48,8 +38,9 @@ void* page_malloc_test(void){
     }
 
     for(int i = 0;i < NUM_MEMORY_ALLOCATIONS;i++){
-        memset(getMemoryAt(i), i, PGSIZE);
+        memset((mem + (i * PGSIZE)), i, PGSIZE);
     }
+    return mem;
 }
 
 
@@ -71,42 +62,38 @@ void* pmalloc_test(){
     return p;
 }
 
-int validate_test (void* p, int value){
-    char mem_val = *p;
-    if (mem_val != value){
-        printf(1, "falied validate memory");
-        return -1;
-    }
-    return 0;
+void validate_test(char* mem, char value,int size){
+    for(char* p = mem;p < mem + size;p++){
+        char mem_val = *p;
+        if(mem_val != value){
+            printf(1,"memory validation failed, found %d in memory, expected %d in memory!!!\n",mem_val,value);
+            exit();
 
+        }
+    }
 
 }
 
 
     int main(int argc, char *argv[]){
         if(argc < 2){
-            void * mem1 = malloc_test();
-            void * mem2 =  pmalloc_test();
-            if (validate_test(mem1,value)== -1) {
-                goto bad;
-            }
-            if (validate_test(mem1,value)== -1) {
-                goto bad;
-            }
-            pfree (mem1);
-            pfree(mem2);
-            mem= page_malloc_test();
-            free(mem);
+           // malloc_test();
+            //void * mem1 = malloc_test();
+            //void * mem2 =  pmalloc_test();
+            //validate_test(mem1,value, TWOKB);
+            //validate_test(mem2,value, PGSIZE );
+            //pfree (mem1);
+            //pfree(mem2);
+            //mem= page_malloc_test();
+            //free(mem);
             printf(1,"Test success\n");
             exit();
         }
         else {
-            panic("sanity: cannot performe sanity with params");
+            printf(1,"sanity: cannot performe sanity with params");
 
         }
 
-    bad:
-        printf(1, "sanity falied");
     }
 
 
