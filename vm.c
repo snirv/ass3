@@ -609,7 +609,7 @@ is_p_flag_on(void* va){
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
         return -1;
-    } else if((*pte & PTE_W) != 0){
+    } else if((*pte & PTE_PRTC) != 0){
         return 1;
     } else{
         return 0;

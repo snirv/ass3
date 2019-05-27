@@ -204,6 +204,11 @@ int             turn_on_w_flag(void* va);
 int             is_w_flag_off(void* va);
 int             is_p_flag_on(void* va);
 
+
+void*           pmalloc(void);
+int             protect_page(void* ap);
+int             pfree(void*);
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 

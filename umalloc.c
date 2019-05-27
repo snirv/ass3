@@ -60,6 +60,19 @@ morecore(uint nu)
   return freep;
 }
 
+static Header*
+protect_morecore(uint nu)
+{
+    char *p;
+    Header *hp;
+    p = sbrk(nu * sizeof(Header));
+    if(p == (char*)-1)
+        return 0;
+    hp = (Header*)p;
+    hp->s.size = nu;
+    free((void*)(hp + 1));
+    return freep;
+}
 void*
 malloc(uint nbytes)
 {
@@ -90,13 +103,16 @@ malloc(uint nbytes)
 }
 
 
-void* pmalloc(){
-//todo
-    return 0;
+void*
+pmalloc(){
+   void* p = protect_morecore(512);
+    turn_on_p_flag(p);
+    return p;
 }
 
 
-int protect_page(void* ap){
+int
+protect_page(void* ap){
   if (is_p_flag_on(ap)) {
     return turn_off_w_flag(ap);
   } else{

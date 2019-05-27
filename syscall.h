@@ -26,6 +26,9 @@
 #define SYS_turn_on_w_flag      25
 #define SYS_is_w_flag_off       26
 #define SYS_is_p_flag_on        27
+//#define SYS_pmalloc             28
+//#define SYS_protect_page        29
+//#define SYS_pfree               30
 
 
 

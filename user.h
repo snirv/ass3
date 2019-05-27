@@ -24,6 +24,9 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int yield(void);
+//int   protect_page(void* ap);
+//void* pmalloc();
+//int   pfree(void*);
 
 //pmalloc
 int turn_on_p_flag(void*);  //1.1 turn on protected flag for page  - means that page wa alloced using pmalloc
@@ -48,8 +51,9 @@ char* gets(char*, int max);
 uint strlen(char*);
 void* memset(void*, int, uint);
 void* malloc(uint);
+int   protect_page(void* ap);
 void* pmalloc();
-int pfree(void*);
+int   pfree(void*);
 void free(void*);
 int atoi(const char*);
 
