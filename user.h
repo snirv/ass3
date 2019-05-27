@@ -48,6 +48,8 @@ char* gets(char*, int max);
 uint strlen(char*);
 void* memset(void*, int, uint);
 void* malloc(uint);
+void* pmalloc(unit);
+void pfree(void*);
 void free(void*);
 int atoi(const char*);
 
