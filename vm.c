@@ -244,7 +244,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
 //      #if SELECTION != NONE todo
-      if(p->pgdir == pgdir && ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0))) {
+//      if(p->pgdir == pgdir && ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0))) {
 //      cprintf("paging allocuvm proc name:%s\n",p->name);
           if (p->pysc_pages_num + p->swaped_pages_num == MAX_TOTAL_PAGES) { // proc cannot pass 32 pages total 2.1
 //              cprintf("pass max total paging allocuvm proc name:%s\n",p->name);
@@ -262,7 +262,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
               int index_to_insert = p->pysc_pages_num;
               insert_to_pysc_arr(pte, index_to_insert);
           }
-      }
+
 //      #endif
 
       mem = kalloc();
