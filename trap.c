@@ -80,6 +80,7 @@ trap(struct trapframe *tf)
 
   case T_PGFLT://2.2
       if ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0)){
+//          cprintf("trap proc name:%s\n",myproc()->name);
           uint va = rcr2();
           myproc()->pgflt_num++;
           if(page_in(va)!= -1){
