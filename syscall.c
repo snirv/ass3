@@ -109,6 +109,12 @@ extern int sys_turn_off_w_flag(void);
 extern int sys_turn_on_w_flag(void);
 extern int sys_is_w_flag_off(void);
 extern int sys_is_p_flag_on(void);
+extern int sys_pmalloc(void);
+extern int sys_protect_page(void);
+extern int sys_pfree(void);
+
+
+
 
 
 static int (*syscalls[])(void) = {
@@ -134,11 +140,15 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_yield]   sys_yield,
-[SYS_turn_on_p_flag]   sys_turn_on_p_flag,
+[SYS_turn_on_p_flag]    sys_turn_on_p_flag,
 [SYS_turn_off_w_flag]   sys_turn_off_w_flag,
-[SYS_turn_on_w_flag]   sys_turn_on_w_flag,
-[SYS_is_w_flag_off]   sys_is_w_flag_off,
-[SYS_is_p_flag_on]   sys_is_p_flag_on,
+[SYS_turn_on_w_flag]    sys_turn_on_w_flag,
+[SYS_is_w_flag_off]     sys_is_w_flag_off,
+[SYS_is_p_flag_on]      sys_is_p_flag_on,
+//[SYS_pmalloc]           sys_pmalloc,
+//[SYS_protect_page]      sys_protect_page,
+//[SYS_pfree]             sys_pfree,
+
 };
 
 void

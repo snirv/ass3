@@ -71,7 +71,7 @@ QEMU = $(shell if which qemu > /dev/null; \
 	echo "***" 1>&2; exit 1)
 endif
 
-CC = $(TOOLPREFIX)gcc -DSELECTION=$($(SELECTION))
+CC = $(TOOLPREFIX)gcc -DSELECTION=$($(SELECTION)) -DVERBOSE_PRINT=$($(VERBOSE_PRINT))
 AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
@@ -214,13 +214,7 @@ ifndef CPUS
 CPUS := 2
 endif
 
-LIFO := 1
-SCFIFO := 2
-NONE := 3
 
-ifndef SELECTION
-SELECTION := SCFIFO
-endif
 
 QEMUOPTS = -drive file=fs.img,index=1,media=disk,format=raw -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
@@ -287,3 +281,18 @@ tar:
 	(cd /tmp; tar cf - xv6) | gzip >xv6-rev10.tar.gz  # the next one will be 10 (9/17)
 
 .PHONY: dist-test dist
+
+
+
+LIFO := 1
+SCFIFO := 2
+NONE := 3
+ifndef SELECTION
+    SELECTION := SCFIFO
+endif
+
+TRUE := 1
+FALSE := 0
+ifndef VERBOSE_PRINT
+    VERBOSE_PRINT := FALSE
+endif

@@ -118,6 +118,7 @@ struct cpu*     mycpu(void);
 struct proc*    myproc();
 void            pinit(void);
 void            procdump(void);
+void            verbose_procdump(void);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            setproc(struct proc*);
@@ -202,6 +203,11 @@ int             turn_off_w_flag(void* va);
 int             turn_on_w_flag(void* va);
 int             is_w_flag_off(void* va);
 int             is_p_flag_on(void* va);
+
+
+void*           pmalloc(void);
+int             protect_page(void* ap);
+int             pfree(void*);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

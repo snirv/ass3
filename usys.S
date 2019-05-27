@@ -34,3 +34,8 @@ SYSCALL(turn_off_w_flag)
 SYSCALL(turn_on_w_flag)
 SYSCALL(is_w_flag_off)
 SYSCALL(is_p_flag_on)
+//SYSCALL(pmalloc)
+//SYSCALL(protect_page)
+//SYSCALL(pfree)
+
+

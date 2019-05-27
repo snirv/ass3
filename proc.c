@@ -301,7 +301,13 @@ exit(void)
     }
   }
 
-  // Jump into the scheduler, never to return.
+
+#if VERBOSE_PRINT != FALSE
+    verbose_procdump();
+#endif
+
+
+    // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
   sched();
   panic("zombie exit");
@@ -572,7 +578,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
+    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -581,4 +587,38 @@ procdump(void)
     cprintf("\n");
   }
     cprintf("%d /%d free pages in the system\n", current_free_page , total_pages);
+}
+
+
+
+
+//PAGEBREAK: 36
+// Print a process listing to console.  For debugging.
+// Runs when user types ^P on console.
+// No lock to avoid wedging a stuck machine further.
+void
+verbose_procdump(void)
+{
+    static char *states[] = {
+            [UNUSED]    "unused",
+            [EMBRYO]    "embryo",
+            [SLEEPING]  "sleep ",
+            [RUNNABLE]  "runble",
+            [RUNNING]   "run   ",
+            [ZOMBIE]    "zombie"
+    };
+    struct proc* p = myproc();
+    char *state;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state]) {
+
+        state = states[p->state];
+    } else {
+        state = "???";
+    }
+    if ((namecmp(p->name, "init") != 0) && (namecmp(p->name, "sh") != 0)) {
+    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
+    }
+    else
+        cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("\n");
 }
