@@ -146,7 +146,7 @@ protected_header* find_node_in_list(uint va){
 }
 
 
-void* pmalloc(){
+void*   pmalloc(){
     protected_header* node;
 
     protected_header* curr = head;
@@ -217,7 +217,7 @@ int pfree(void* ap){
   turn_off_p_flag(ap);
   node->used =0;
   dec_protected_pg_num();
-  //free(ap);
-    //return 0;
-    return 1;
+  free(ap);
+    return 0;
+//    return 1;
 }

@@ -58,9 +58,8 @@ char* gets(char*, int max);
 unsigned int strlen(char*);
 void* memset(void*, int, unsigned int);
 void* malloc(unsigned int);
-int   protect_page(void* ap);
-void* pmalloc();
-int pfree(void*);
 void free(void*);
 int atoi(const char*);
-
+int   protect_page(void* ap);
+void* pmalloc(void);
+int pfree(void*);

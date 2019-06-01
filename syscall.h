@@ -21,23 +21,19 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_yield  22
-#define SYS_turn_on_p_flag      23
-#define SYS_turn_off_w_flag     24
-#define SYS_turn_on_w_flag      25
-#define SYS_is_w_flag_off       26
-#define SYS_is_p_flag_on        27
-#define SYS_inc_protected_pg_num    28
-#define SYS_dec_protected_pg_num    29
-#define SYS_turn_off_p_flag     30
-#define SYS_turn_on_prsnt_flag      31
-#define SYS_turn_on_user_flag      32
-
-
-
-
-//#define SYS_pmalloc            31
-//#define SYS_protect_page       32
-//#define SYS_pfree              33
+#define SYS_turn_on_p_flag                   23
+#define SYS_turn_off_w_flag                  24
+#define SYS_turn_on_w_flag                   25
+#define SYS_is_w_flag_off                    26
+#define SYS_is_p_flag_on                     27
+#define SYS_inc_protected_pg_num             28
+#define SYS_dec_protected_pg_num             29
+#define SYS_turn_off_p_flag                  30
+#define SYS_turn_on_prsnt_flag               31
+#define SYS_turn_on_user_flag                32
+#define SYS_pmalloc                          33
+#define SYS_protect_page                     34
+#define SYS_pfree                            35
 
 
 

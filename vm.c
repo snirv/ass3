@@ -498,7 +498,7 @@ page_in(uint va){
   pte_t* pte = walkpgdir(p->pgdir, a,0);
 
 
-  if ((*pte & PTE_PG) == 0){//check if page is not paged out
+  if ((PTE_FLAGS(*pte) & PTE_PG) == 0){//check if page is not paged out
         return -1;
     }
 

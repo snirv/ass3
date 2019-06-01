@@ -6,6 +6,7 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+//#include "user.h"
 
 
 int sys_yield(void)
@@ -227,38 +228,38 @@ sys_dec_protected_pg_num(void){
 
 
 
-//int
-//sys_pmalloc(void){
-//    pmalloc();
-//    return 1;
-//
-//}
-//
-//
-//int
-//sys_protect_page(void){
-//    void *va;
-//
-//    if (argptr(0, (void *) &va, sizeof(va)) < 0){
-//        return -1;
-//    }
-//
-//    protect_page(va);
-//    return 1;
-//
-//}
-//
-//
-//
-//int
-//sys_pfree(void){
-//    void *va;
-//
-//    if (argptr(0, (void *) &va, sizeof(va)) < 0){
-//        return -1;
-//    }
-//
-//    pfree(va);
-//    return 1;
-//
-//}
+int
+sys_pmalloc(void){
+    pmalloc();
+    return 1;
+
+}
+
+
+int
+sys_protect_page(void){
+    void *va;
+
+    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+        return -1;
+    }
+
+    protect_page(va);
+    return 1;
+
+}
+
+
+
+int
+sys_pfree(void){
+    void *va;
+
+    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+        return -1;
+    }
+
+    pfree(va);
+    return 1;
+
+}

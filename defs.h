@@ -209,9 +209,17 @@ int             turn_on_user_flag(void* va);
 
 void            dec_protected_pg_num(void);
 void            inc_protected_pg_num(void);
+
+
+
+
+
+//umalloc
 void*           pmalloc(void);
 int             protect_page(void* ap);
 int             pfree(void*);
+
+
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

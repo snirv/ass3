@@ -154,9 +154,9 @@ static int (*syscalls[])(void) = {
 [SYS_turn_off_p_flag]   sys_turn_off_p_flag,
 [SYS_turn_on_prsnt_flag]    sys_turn_on_prsnt_flag,
 [SYS_turn_on_user_flag]    sys_turn_on_user_flag,
-//[SYS_pmalloc]           sys_pmalloc,
-//[SYS_protect_page]      sys_protect_page,
-//[SYS_pfree]             sys_pfree,
+[SYS_pmalloc]           sys_pmalloc,
+[SYS_protect_page]      sys_protect_page,
+[SYS_pfree]             sys_pfree,
 
 };
 

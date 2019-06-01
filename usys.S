@@ -39,8 +39,8 @@ SYSCALL(inc_protected_pg_num)
 SYSCALL(turn_off_p_flag)
 SYSCALL(turn_on_prsnt_flag)
 SYSCALL(turn_on_user_flag)
-//SYSCALL(pmalloc)
-//SYSCALL(protect_page)
-//SYSCALL(pfree)
+SYSCALL(pmalloc)
+SYSCALL(protect_page)
+SYSCALL(pfree)
 
 

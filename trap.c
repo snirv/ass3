@@ -45,6 +45,7 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
+  struct proc* p = myproc();
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
@@ -79,11 +80,10 @@ trap(struct trapframe *tf)
     break;
 
   case T_PGFLT://2.2
-      if ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0)){
-//          cprintf("trap proc name:%s\n",myproc()->name);
+      if ((namecmp(p->name, "init") != 0) && (namecmp(p->name, "sh") != 0)){
           uint va = rcr2();
-          myproc()->pgflt_num++;
           if(page_in(va)!= -1){
+              p->pgflt_num++;
               break;
           }
       }
