@@ -90,6 +90,9 @@ found:
   p->pid = nextpid++;
   p->pysc_pages_num = 0;//2.3
   p->swaped_pages_num = 0;
+  p->pgflt_num = 0;
+  p->page_out_num = 0;
+
 
 
   release(&ptable.lock);
@@ -210,7 +213,7 @@ fork(void)
         np->pysc_pages_num = curproc->pysc_pages_num;
         np->swaped_pages_num = curproc->swaped_pages_num;
         np->creation_counter = curproc->creation_counter;
-        np->protectes_pg_num = curproc->protectes_pg_num;
+        np->protected_pg_num = curproc->protected_pg_num;
         np->page_out_num =0;
         np->pgflt_num =0;
 
@@ -345,7 +348,7 @@ wait(void)
         p->pysc_pages_num = 0;
         p->swaped_pages_num = 0;
         p->pgflt_num = 0;
-        p->protectes_pg_num = 0;
+        p->protected_pg_num = 0;
         p->page_out_num = 0;
         memset(p->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
         memset(p->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
@@ -576,9 +579,16 @@ procdump(void)
       continue;
     if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
       state = states[p->state];
-    else
-      state = "???";
-    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
+    else {
+        state = "???";
+    }
+    if ((namecmp(p->name, "init") != 0) && (namecmp(p->name, "sh") != 0)){
+          cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num,
+                  p->swaped_pages_num, p->protected_pg_num, p->pgflt_num, p->page_out_num, p->name);
+      }
+      else {
+          cprintf("%d %s %s", p->pid, state, p->name);
+      }
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -616,7 +626,7 @@ verbose_procdump(void)
         state = "???";
     }
     if ((namecmp(p->name, "init") != 0) && (namecmp(p->name, "sh") != 0)) {
-    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num, p->swaped_pages_num, p->protectes_pg_num, p-> pgflt_num, p->page_out_num, p->name);
+    cprintf("%d %s %d %d %d %d %d %s", p->pid, state, p->pysc_pages_num + p->swaped_pages_num, p->swaped_pages_num, p->protected_pg_num, p-> pgflt_num, p->page_out_num, p->name);
     }
     else
         cprintf("%d %s %s", p->pid, state, p->name);

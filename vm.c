@@ -238,6 +238,8 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
     return oldsz;
 
 
+//todo check if need to block init and sh + check pgdir
+
 
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
@@ -311,15 +313,7 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
         panic("kfree");
       char *v = P2V(pa);
       kfree(v);
-        for (int i = 0; i < 5; i++) {
-            cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
-        }
-        cprintf("\n");
       *pte = 0;
-        for (int i = 0; i < 5; i++) {
-            cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
-        }
-        cprintf("\n");
     }
   }
   return newsz;
@@ -637,6 +631,40 @@ turn_on_w_flag(void* va){
     }
 }
 
+
+
+int
+turn_on_prsnt_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte |PTE_P;
+        return 0;
+    }
+}
+
+
+
+int
+turn_on_user_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        return -1;
+    } else{
+        *pte = *pte |PTE_U;
+        return 0;
+    }
+}
+
+
+
+
+
 int
 is_w_flag_off(void* va){
     pte_t* pte;
@@ -742,3 +770,13 @@ int find_page_min_creation(struct proc* p){
 
 
 }
+
+
+void dec_protected_pg_num() {
+    myproc()->protected_pg_num--;
+}
+
+void inc_protected_pg_num(){
+    myproc()->protected_pg_num++;
+}
+
