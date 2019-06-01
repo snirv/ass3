@@ -24,14 +24,24 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int yield(void);
+void dec_protected_pg_num(void);
+void inc_protected_pg_num(void);
+
+
 
 //pmalloc
 int turn_on_p_flag(void*);  //1.1 turn on protected flag for page  - means that page wa alloced using pmalloc
-
+int turn_on_prsnt_flag(void*);
+int turn_on_user_flag(void*);
 
 //protect_page
 int is_p_flag_on(void*);  //1.1
 int turn_off_w_flag(void*);  //1.1 turn off write flag for page
+int turn_off_p_flag(void*);
+
+
+
+
 
 //pfree
 int turn_on_w_flag(void*);  //1.1 turn on write flag for page
@@ -45,9 +55,9 @@ char* strchr(const char*, char c);
 int strcmp(const char*, const char*);
 void printf(int, char*, ...);
 char* gets(char*, int max);
-uint strlen(char*);
-void* memset(void*, int, uint);
-void* malloc(uint);
+unsigned int strlen(char*);
+void* memset(void*, int, unsigned int);
+void* malloc(unsigned int);
 int   protect_page(void* ap);
 void* pmalloc();
 int pfree(void*);

@@ -82,7 +82,7 @@ struct proc {
     struct swap_page swaped_pages_arr[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
 
     struct pysc_page  pysc_page_arr[MAX_PSYC_PAGES];  // will store data on all pages (RAM & DISK)d
-    int protectes_pg_num;
+    int protected_pg_num;
     int pgflt_num;
     int page_out_num;
 };

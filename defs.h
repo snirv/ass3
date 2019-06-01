@@ -200,11 +200,15 @@ int             page_out(int to_swap , int index_to_swap);
 int             page_in(uint va);
 int             turn_on_p_flag(void* va);
 int             turn_off_w_flag(void* va);
+int             turn_off_p_flag(void* va);
 int             turn_on_w_flag(void* va);
 int             is_w_flag_off(void* va);
 int             is_p_flag_on(void* va);
+int             turn_on_prsnt_flag(void* va);
+int             turn_on_user_flag(void* va);
 
-
+void            dec_protected_pg_num(void);
+void            inc_protected_pg_num(void);
 void*           pmalloc(void);
 int             protect_page(void* ap);
 int             pfree(void*);

@@ -126,6 +126,22 @@ sys_turn_off_w_flag(void){
 
 
 int
+sys_turn_off_p_flag(void){
+
+    void *va;
+
+    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+        return -1;
+    }
+
+    return turn_off_p_flag(va);
+
+}
+
+
+
+
+int
 sys_turn_on_w_flag(void){
 
   void *va;
@@ -138,6 +154,35 @@ sys_turn_on_w_flag(void){
 
 }
 
+
+
+int
+sys_turn_on_prsnt_flag(void){
+
+    void *va;
+
+    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+        return -1;
+    }
+
+    return turn_on_prsnt_flag(va);
+
+}
+
+
+
+int
+sys_turn_on_user_flag(void){
+
+    void *va;
+
+    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+        return -1;
+    }
+
+    return turn_on_user_flag(va);
+
+}
 
 
 int
@@ -165,6 +210,21 @@ sys_is_p_flag_on(void){
   return is_p_flag_on(va);
 
 }
+
+
+
+int
+sys_inc_protected_pg_num(void){
+    inc_protected_pg_num();
+    return 1;
+}
+
+int
+sys_dec_protected_pg_num(void){
+    dec_protected_pg_num();
+    return 1;
+}
+
 
 
 //int
