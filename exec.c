@@ -54,7 +54,6 @@ exec(char *path, char **argv)
 
   for( i = 0 ; i< (MAX_PSYC_PAGES); i++){
       pysc_pages_arr_bkp[i] = curproc->pysc_page_arr[i];
-
   }
     memset(curproc->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
     memset(curproc->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
@@ -124,6 +123,8 @@ exec(char *path, char **argv)
       last = s+1;
   safestrcpy(curproc->name, last, sizeof(curproc->name));
 
+
+
   // Commit to the user image.
   oldpgdir = curproc->pgdir;
   curproc->pgdir = pgdir;
@@ -136,10 +137,27 @@ exec(char *path, char **argv)
   createSwapFile(curproc);
 
   switchuvm(curproc);
+
+//    for (int i = 0; i < 5; i++) {
+//        cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
+//        cprintf("\n");
+//    }
   freevm(oldpgdir);
+//    for (int i = 0; i < 5; i++) {
+//        cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
+//        cprintf("\n");
+//    }
+//  memset(curproc->pysc_page_arr,0,MAX_PSYC_PAGES* sizeof(struct pysc_page));
+//    memset(curproc->swaped_pages_arr,0,(MAX_TOTAL_PAGES-MAX_PSYC_PAGES)* sizeof(struct swap_page));
+//    curproc->creation_counter = 0;
+//    curproc->pysc_pages_num = 0;
+//    curproc->swaped_pages_num = 0;
+//    curproc->pgflt_num = 0;
+//    curproc->page_out_num = 0;
+//    curproc->protectes_pg_num= 0;
 
 
-  return 0;
+    return 0;
 
  bad:
   if(pgdir)

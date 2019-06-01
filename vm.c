@@ -238,8 +238,6 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
     return oldsz;
 
 
-//todo check if need to block init and sh + check pgdir
-
 
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
@@ -313,7 +311,15 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
         panic("kfree");
       char *v = P2V(pa);
       kfree(v);
+        for (int i = 0; i < 5; i++) {
+            cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
+        }
+        cprintf("\n");
       *pte = 0;
+        for (int i = 0; i < 5; i++) {
+            cprintf("*pte[%d] = %x\n", i, *myproc()->pysc_page_arr[i].pte);
+        }
+        cprintf("\n");
     }
   }
   return newsz;
@@ -436,12 +442,14 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //return -1 upon failure and the index of the page that was paged out in the pysc arr
 int
 page_out(int to_swap , int index_to_swap) {
+//    cprintf("page out enter proc name:%s\n",myproc()->name);
     uint offset_index;
     struct proc *p = myproc();
     p->page_out_num++; //4.0
 
     //find a page to page out
     pte_t *pte_to_page_out = get_page_to_page_out(p);
+//    cprintf("page out before proc name:%s\n",myproc()->name);
     int index_in_pysc_arr = get_index_in_pysc_arr(pte_to_page_out); // a place for the new page in the pysc arr
 
 //    char * arr = (char *)P2V(PTE_ADDR(*pte_to_page_out));
@@ -449,14 +457,14 @@ page_out(int to_swap , int index_to_swap) {
     if(to_swap){
         offset_index =  (uint)index_to_swap;
 
-    } else{
+    } else {
         offset_index = p->swaped_pages_num;
     }
-
+    cprintf("page out before proc name:%s\n",myproc()->name);
     if (writeToSwapFile(p, (char *)P2V(PTE_ADDR(*pte_to_page_out)), offset_index * PGSIZE, PGSIZE) == -1) {
         panic("page out fail on writeToSwapFile\n");
     }
-
+    cprintf("page out after proc name:%s\n",myproc()->name);
     if (to_swap) {
         p->swaped_pages_arr[index_to_swap].pte = pte_to_page_out;
     } else {
@@ -468,6 +476,7 @@ page_out(int to_swap , int index_to_swap) {
   //set flags
   *pte_to_page_out = *pte_to_page_out | PTE_PG ;
   *pte_to_page_out = *pte_to_page_out & (~PTE_P) ;
+    lcr3(V2P(p->pgdir));// refresh the tlb
 
   //free the page that was paged out
   kfree((char*)P2V(PTE_ADDR(*pte_to_page_out)));
@@ -493,19 +502,23 @@ page_out(int to_swap , int index_to_swap) {
  */
 int
 page_in(uint va){
+
   struct proc* p = myproc();
-   char* a =  (char*)PGROUNDDOWN((uint)va);
-  pte_t* pte = walkpgdir(p->pgdir, a,0);
-
-
-  if ((*pte & PTE_PG) == 0){//check if page is not paged out
-        return -1;
-    }
+  char* a =  (char*)PGROUNDDOWN((uint)va);
+  pte_t* pte = walkpgdir(p->pgdir,(char*)va,0);
 
     if ((PTE_FLAGS(*pte) & PTE_P) != 0){//check if page is present todo
         cprintf("page is present\n");
         return -1;
     }
+
+  if ((*pte & PTE_PG) == 0){//check if page is not paged out
+      cprintf("page was not paged out\n");
+        return -1;
+    }
+//    cprintf("page in before proc name:%s\n",myproc()->name);
+
+
 
 
     char *mem = kalloc();
@@ -521,7 +534,7 @@ page_in(uint va){
     }
   uint place_on_file = (uint)swap_index * PGSIZE;
   readFromSwapFile(p,mem,place_on_file ,PGSIZE);
-
+//    cprintf("page in after1 proc name:%s\n",myproc()->name);
 
 // if psyc mem is full do page out
   int to_swap = 1;
@@ -556,6 +569,9 @@ int get_page_index_in_swap_arr(pte_t *pte){  //sharon added
 
 
 void insert_to_pysc_arr(pte_t* pte , int index_to_insert){
+    if(pte == 0){
+        panic("insert_to_pysc_arr got pte = 0\n");
+    }
     struct pysc_page page;
     page.pte = pte;
     page.creation_time = myproc()->creation_counter++;
@@ -584,9 +600,10 @@ turn_on_p_flag(void* va){
 
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
-        return -1;
+        panic("p-flag pte is 0\n");
     } else{
         *pte = *pte | PTE_PRTC;
+        lcr3(V2P(myproc()->pgdir));// refresh the tlb
         return 0;
     }
 
@@ -598,9 +615,10 @@ turn_off_w_flag(void* va){
 
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
-        return -1;
+        panic("w-flag pte is 0\n");
     } else{
         *pte = *pte & (~PTE_W);
+        lcr3(V2P(myproc()->pgdir));// refresh the tlb
         return 0;
     }
 }
@@ -611,9 +629,10 @@ turn_on_w_flag(void* va){
 
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
-        return -1;
+        panic("w-flag pte is 0\n");
     } else{
         *pte = *pte |PTE_W;
+        lcr3(V2P(myproc()->pgdir));// refresh the tlb
         return 0;
     }
 }
@@ -624,7 +643,7 @@ is_w_flag_off(void* va){
 
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
-        return -1;
+        panic("w-flag pte is 0\n");
     } else if((*pte & PTE_W) == 0){
         return 1;
     } else{
@@ -639,7 +658,7 @@ is_p_flag_on(void* va){
 
     pte = walkpgdir(myproc()->pgdir, va, 0);
     if (pte == 0){
-        return -1;
+        panic("p-flag pte is 0\n");
     } else if((*pte & PTE_PRTC) != 0){
         return 1;
     } else{
@@ -652,7 +671,7 @@ is_p_flag_on(void* va){
 int
 is_a_flag_on(pte_t* pte){
     if (pte == 0){
-        return -1;
+       panic("a-flag pte is 0\n");
     } else if((*pte & PTE_A) != 0){
         return 1;
     } else{
@@ -666,6 +685,7 @@ turn_off_a_flag(pte_t* pte){
         return -1;
     } else{
         *pte = *pte & (~PTE_A);
+        lcr3(V2P(myproc()->pgdir));// refresh the tlb
         return 0;
     }
 }
@@ -678,43 +698,46 @@ turn_off_a_flag(pte_t* pte){
 pte_t* get_page_to_page_out(struct proc* p){
 
     int index = 0;
-//#if SELECTION == LIFO
+////#if SELECTION != SCFIFO && SELECTION != NONE
 //    cprintf("lifo proc name:%s\n",myproc()->name);
-    int max =0;
-    for(int i=0; i< p->pysc_pages_num ; i++ ){
-            if (p->pysc_page_arr[i].creation_time > max){
-                max = p->pysc_page_arr[i].creation_time;
-                index = i;
-            }
-    }
-//#endif
-
-
-//#if SELECTION == SCFIFO
-//    cprintf("scfifo proc name:%s\n",myproc()->name);
-//    index = find_page_min_creation(p);
-//
-//    while (is_a_flag_on(p->pysc_page_arr[index].pte)){
-//        turn_off_a_flag(p->pysc_page_arr[index].pte);
-//        p->pysc_page_arr[index].creation_time = myproc()->creation_counter++;
-//        index= find_page_min_creation(p);
+//    int max =0;
+//    for(int i=0; i< p->pysc_pages_num ; i++ ){
+//            if (p->pysc_page_arr[i].creation_time > max){
+//                max = p->pysc_page_arr[i].creation_time;
+//                index = i;
+//            }
 //    }
+////#endif
 
-
-
+//
+//#if SELECTION != LIFO && SELECTION != NONE
+    cprintf("scfifo proc name:%s\n",myproc()->name);
+//    for (int i = 0; i < MAX_PSYC_PAGES; i++) {
+//            cprintf("pte[%d] = %x\n", i, p->pysc_page_arr[i].pte);
+//        }
+    index = find_page_min_creation(p);
+    while (is_a_flag_on(p->pysc_page_arr[index].pte)){
+        turn_off_a_flag(p->pysc_page_arr[index].pte);
+        p->pysc_page_arr[index].creation_time = myproc()->creation_counter++;
+        index = find_page_min_creation(p);
+//        cprintf("scfifo while proc name:%s , pte:%x\n",myproc()->name,p->pysc_page_arr[index].pte);
+    }
 //#endif
     return p->pysc_page_arr[index].pte;
 }
 
 
 int find_page_min_creation(struct proc* p){
-    int result = p->pysc_page_arr[0].creation_time;
+    int min_creation_time = p->pysc_page_arr[0].creation_time;
+    int index_of_min = 0;
     for(int i=0; i< p->pysc_pages_num ; i++ ){
-        if (p->pysc_page_arr[i].creation_time < result){
-            result = p->pysc_page_arr[i].creation_time;
+        if ((p->pysc_page_arr[i].creation_time < min_creation_time )&& (p->pysc_page_arr[i].pte != 0) ){
+            min_creation_time = p->pysc_page_arr[i].creation_time;
+            index_of_min = i;
         }
     }
-    return result;
+//    cprintf("index_of_min %d\n", index_of_min);
+    return index_of_min;
 
 
 
