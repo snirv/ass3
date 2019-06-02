@@ -305,8 +305,8 @@ exit(void)
   }
 
 
-#if VERBOSE_PRINT != FALSE
-//    verbose_procdump();
+#ifndef VERBOSE_PRINT
+    verbose_procdump();
 #endif
 
 
