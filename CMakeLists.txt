@@ -69,7 +69,7 @@ add_executable(ass3
         runoff.list
         runoff.spec
         runoff1
-        sanity.c
+        myMemTest.c
         sh.c
         show1
         sign.pl

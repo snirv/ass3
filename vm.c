@@ -277,7 +277,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
               insert_to_pysc_arr(pte, index_of_page_in_pysc_arr);
 
           } else {
-                    cprintf("insert to pysc arr - not max allocuvm proc name:%s , pte:%x\n", p->name, pte);
+                   // cprintf("insert to pysc arr - not max allocuvm proc name:%s , pte:%x\n", p->name, pte);
               int index_to_insert = p->pysc_pages_num;
               insert_to_pysc_arr(pte, index_to_insert);
           }
@@ -289,7 +289,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 //            cprintf("pte[%d] = %x\n", i, myproc()->pysc_page_arr[i].pte);
 //        }
 //    }
-    cprintf("exit allocuvm proc name:%s\n",p->name);
+    //cprintf("exit allocuvm proc name:%s\n",p->name);
   return newsz;
 }
 
@@ -298,8 +298,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 // need to be less than oldsz.  oldsz can be larger than the actual
 // process size.  Returns the new process size.
 int
-deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
-{
+deallocuvm(pde_t *pgdir, uint oldsz, uint newsz){
   pte_t *pte;
   uint a, pa;
 
