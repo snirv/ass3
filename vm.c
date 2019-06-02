@@ -605,7 +605,7 @@ turn_on_p_flag(void* va){
     } else{
         *pte = *pte | PTE_PRTC;
         lcr3(V2P(myproc()->pgdir));// refresh the tlb
-        return 0;
+        return 1;
     }
 
 }
@@ -620,7 +620,7 @@ turn_off_w_flag(void* va){
     } else{
         *pte = *pte & (~PTE_W);
         lcr3(V2P(myproc()->pgdir));// refresh the tlb
-        return 0;
+        return 1;
     }
 }
 
@@ -635,7 +635,7 @@ turn_off_p_flag(void* va){
     } else{
         *pte = *pte & (~PTE_PRTC);
         lcr3(V2P(myproc()->pgdir));// refresh the tlb
-        return 0;
+        return 1;
     }
 }
 
@@ -650,7 +650,7 @@ turn_on_w_flag(void* va){
     } else{
         *pte = *pte |PTE_W;
         lcr3(V2P(myproc()->pgdir));// refresh the tlb
-        return 0;
+        return 1;
     }
 }
 
@@ -708,7 +708,7 @@ turn_off_a_flag(pte_t* pte){
     } else{
         *pte = *pte & (~PTE_A);
         lcr3(V2P(myproc()->pgdir));// refresh the tlb
-        return 0;
+        return 1;
     }
 }
 

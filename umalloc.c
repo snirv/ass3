@@ -24,14 +24,6 @@ union header {
 
 
 
-//typedef struct protected_header{
-//    int used;
-//    uint va;
-//    struct protected_header* next;
-//} protected_header;
-//
-//
-
 
 
 typedef union header Header;
@@ -78,11 +70,13 @@ morecore(uint nu)
     return freep;
 }
 
+
 static Header*
 protect_morecore(uint nu)
 {
     char *p;
     Header *hp;
+
     p = sbrk(nu * sizeof(Header));
     if(p == (char*)-1)
         return 0;
@@ -91,6 +85,7 @@ protect_morecore(uint nu)
     free((void*)(hp + 1));
     return freep;
 }
+
 
 
 
@@ -137,24 +132,29 @@ pmalloc(void)
         base.s.ptr = freep = prevp = &base;
         base.s.size = 0;
     }
+
+    int enter = 0;
+
     for(p = prevp->s.ptr; ; prevp = p, p = p->s.ptr){
-
-        if(p == freep)
-            if((p = protect_morecore(512)) == 0)
-                return 0;
-
-
-        if(p->s.size >= nunits){
-            if(p->s.size == nunits)
-                prevp->s.ptr = p->s.ptr;
-            else {
-                p->s.size -= nunits;
-                p += p->s.size;
-                p->s.size = nunits;
+        if(enter) {
+            if(p->s.size >= nunits){
+                if(p->s.size == nunits)
+                    prevp->s.ptr = p->s.ptr;
+                else {
+                    p->s.size -= nunits;
+                    p += p->s.size;
+                    p->s.size = nunits;
+                }
+                freep = prevp;
+                turn_on_p_flag((void*) (p+1));
+                return (void*)(p + 1);
             }
-            freep = prevp;
-            turn_on_p_flag((void*) (p+1));
-            return (void*)(p + 1);
+        }
+
+        if(p == freep) {
+            if ((p = protect_morecore(512)) == 0)
+                return 0;
+            enter = 1;
         }
 
     }
@@ -164,22 +164,19 @@ pmalloc(void)
 
 
 
-
 int
 protect_page(void* ap){
-  if((uint)(ap-8) % PGSIZE != 0){
-    //if((uint)(ap) % PGSIZE != 0){
-        printf(1, "protect_page failed: ap mod 4096 =! 0\n");
+  if((int)(ap-8) % PGSIZE != 0){
+
         return -1;
     }
 
     if (is_p_flag_on(ap)) {
-        if( turn_off_w_flag(ap) == 0 ){
-            inc_protected_pg_num();
-            return 0;
-        }
+        turn_off_w_flag(ap);
+        inc_protected_pg_num();
+            return 1;
+
     }
-    printf(1, "protect_page failed\n");
     return -1;
 }
 
@@ -190,9 +187,9 @@ int pfree(void* ap){
         return -1;
     }
     if(is_w_flag_off(ap)){ // if page protected turn - unprotect before free - otherwise free will fail
-        turn_on_w_flag(ap);
+        turn_on_w_flag(ap+8);
     }
     dec_protected_pg_num();
     free(ap);
-    return 0;
+    return 1;
 }
