@@ -126,6 +126,7 @@ sys_turn_off_w_flag(void){
 }
 
 
+
 int
 sys_turn_off_p_flag(void){
 
@@ -138,6 +139,7 @@ sys_turn_off_p_flag(void){
     return turn_off_p_flag(va);
 
 }
+
 
 
 
@@ -157,34 +159,6 @@ sys_turn_on_w_flag(void){
 
 
 
-int
-sys_turn_on_prsnt_flag(void){
-
-    void *va;
-
-    if (argptr(0, (void *) &va, sizeof(va)) < 0){
-        return -1;
-    }
-
-    return turn_on_prsnt_flag(va);
-
-}
-
-
-
-int
-sys_turn_on_user_flag(void){
-
-    void *va;
-
-    if (argptr(0, (void *) &va, sizeof(va)) < 0){
-        return -1;
-    }
-
-    return turn_on_user_flag(va);
-
-}
-
 
 int
 sys_is_w_flag_off(void){
@@ -196,19 +170,6 @@ sys_is_w_flag_off(void){
   }
 
   return is_w_flag_off(va);
-
-}
-
-int
-sys_is_p_flag_on(void){
-
-  void *va;
-
-  if (argptr(0, (void *) &va, sizeof(va)) < 0){
-    return -1;
-  }
-
-  return is_p_flag_on(va);
 
 }
 
@@ -229,37 +190,53 @@ sys_dec_protected_pg_num(void){
 
 
 int
-sys_pmalloc(void){
-    pmalloc();
-    return 1;
+sys_is_p_flag_on(void){
 
-}
-
-
-int
-sys_protect_page(void){
     void *va;
 
     if (argptr(0, (void *) &va, sizeof(va)) < 0){
         return -1;
     }
 
-    protect_page(va);
-    return 1;
+    return is_p_flag_on(va);
 
 }
 
 
 
-int
-sys_pfree(void){
-    void *va;
-
-    if (argptr(0, (void *) &va, sizeof(va)) < 0){
-        return -1;
-    }
-
-    pfree(va);
-    return 1;
-
-}
+//
+//int
+//sys_pmalloc(void){
+//    pmalloc();
+//    return 1;
+//
+//}
+//
+//
+//int
+//sys_protect_page(void){
+//    void *va;
+//
+//    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+//        return -1;
+//    }
+//
+//    protect_page(va);
+//    return 1;
+//
+//}
+//
+//
+//
+//int
+//sys_pfree(void){
+//    void *va;
+//
+//    if (argptr(0, (void *) &va, sizeof(va)) < 0){
+//        return -1;
+//    }
+//
+//    pfree(va);
+//    return 1;
+//
+//}

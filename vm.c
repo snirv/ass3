@@ -499,7 +499,7 @@ page_in(uint va){
 
   struct proc* p = myproc();
   char* a =  (char*)PGROUNDDOWN((uint)va);
-  pte_t* pte = walkpgdir(p->pgdir,(char*)va,0);
+  pte_t* pte = walkpgdir(p->pgdir,a,0);
 
     if ((PTE_FLAGS(*pte) & PTE_P) != 0){//check if page is present todo
         cprintf("page is present\n");
@@ -617,6 +617,22 @@ turn_off_w_flag(void* va){
     }
 }
 
+
+int
+turn_off_p_flag(void* va){
+    pte_t* pte;
+
+    pte = walkpgdir(myproc()->pgdir, va, 0);
+    if (pte == 0){
+        panic("p-flag pte is 0\n");
+    } else{
+        *pte = *pte & (~PTE_PRTC);
+        lcr3(V2P(myproc()->pgdir));// refresh the tlb
+        return 0;
+    }
+}
+
+
 int
 turn_on_w_flag(void* va){
     pte_t* pte;
@@ -631,35 +647,6 @@ turn_on_w_flag(void* va){
     }
 }
 
-
-
-int
-turn_on_prsnt_flag(void* va){
-    pte_t* pte;
-
-    pte = walkpgdir(myproc()->pgdir, va, 0);
-    if (pte == 0){
-        return -1;
-    } else{
-        *pte = *pte |PTE_P;
-        return 0;
-    }
-}
-
-
-
-int
-turn_on_user_flag(void* va){
-    pte_t* pte;
-
-    pte = walkpgdir(myproc()->pgdir, va, 0);
-    if (pte == 0){
-        return -1;
-    } else{
-        *pte = *pte |PTE_U;
-        return 0;
-    }
-}
 
 
 

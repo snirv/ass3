@@ -31,15 +31,14 @@ void inc_protected_pg_num(void);
 
 //pmalloc
 int turn_on_p_flag(void*);  //1.1 turn on protected flag for page  - means that page wa alloced using pmalloc
-int turn_on_prsnt_flag(void*);
-int turn_on_user_flag(void*);
+
 
 //protect_page
 int is_p_flag_on(void*);  //1.1
-int turn_off_w_flag(void*);  //1.1 turn off write flag for page
 int turn_off_p_flag(void*);
 
 
+int turn_off_w_flag (void*);
 
 
 
