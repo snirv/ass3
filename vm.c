@@ -770,5 +770,3 @@ void inc_protected_pg_num() {
     myproc()->protected_pg_num++;
 }
 
-
-
