@@ -243,27 +243,14 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 
   a = PGROUNDUP(oldsz);
   for(; a < newsz; a += PGSIZE){
-//      #if SELECTION != NONE todo
-//      if(p->pgdir == pgdir && ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0))) {
-//      cprintf("paging allocuvm proc name:%s\n",p->name);
+      #if SELECTION != NONE
+
           if (p->pysc_pages_num + p->swaped_pages_num == MAX_TOTAL_PAGES) { // proc cannot pass 32 pages total 2.1
 //              cprintf("pass max total paging allocuvm proc name:%s\n",p->name);
               return 0;
           }
-          pte_t *pte = walkpgdir(myproc()->pgdir, (void *) PGROUNDDOWN((uint) a), 0);
 
-          if (p->pysc_pages_num == MAX_PSYC_PAGES) { // max pysc pages -- need to swap
-//              cprintf("pass max pysc paging allocuvm proc name:%s ,pte:%x\n",p->name , pte );
-              int index_of_page_in_pysc_arr = page_out(0, 0); // 0,0 - page out swap to any index in swap file , in this case swap file must still have place
-              insert_to_pysc_arr(pte, index_of_page_in_pysc_arr);
-
-          } else {
-//              cprintf("insert to pysc arr - not max allocuvm proc name:%s , pte:%x\n",p->name , pte );
-              int index_to_insert = p->pysc_pages_num;
-              insert_to_pysc_arr(pte, index_to_insert);
-          }
-
-//      #endif
+      #endif
 
       mem = kalloc();
     if(mem == 0){
@@ -279,13 +266,30 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
       kfree(mem);
       return 0;
     }
+
+#if SELECTION != NONE
+      pte_t *pte = walkpgdir(pgdir, (void *) PGROUNDDOWN((uint) a), 0);
+      if(pte != 0) {
+          if (p->pysc_pages_num == MAX_PSYC_PAGES) { // max pysc pages -- need to swap
+                    cprintf("pass max pysc paging allocuvm proc name:%s ,pte:%x\n", p->name, pte);
+              int index_of_page_in_pysc_arr = page_out(0,
+                                                       0); // 0,0 - page out swap to any index in swap file , in this case swap file must still have place
+              insert_to_pysc_arr(pte, index_of_page_in_pysc_arr);
+
+          } else {
+                    cprintf("insert to pysc arr - not max allocuvm proc name:%s , pte:%x\n", p->name, pte);
+              int index_to_insert = p->pysc_pages_num;
+              insert_to_pysc_arr(pte, index_to_insert);
+          }
+      }
   }
+#endif
 //    if(p->pgdir == pgdir && ((namecmp(myproc()->name, "init") != 0) && (namecmp(myproc()->name, "sh") != 0))) {
 //        for (int i = 0; i < MAX_PSYC_PAGES; i++) {
 //            cprintf("pte[%d] = %x\n", i, myproc()->pysc_page_arr[i].pte);
 //        }
 //    }
-//    cprintf("exit allocuvm proc name:%s\n",p->name);
+    cprintf("exit allocuvm proc name:%s\n",p->name);
   return newsz;
 }
 
@@ -454,11 +458,11 @@ page_out(int to_swap , int index_to_swap) {
     } else {
         offset_index = p->swaped_pages_num;
     }
-    cprintf("page out before proc name:%s\n",myproc()->name);
+//    cprintf("page out before proc name:%s\n",myproc()->name);
     if (writeToSwapFile(p, (char *)P2V(PTE_ADDR(*pte_to_page_out)), offset_index * PGSIZE, PGSIZE) == -1) {
         panic("page out fail on writeToSwapFile\n");
     }
-    cprintf("page out after proc name:%s\n",myproc()->name);
+//    cprintf("page out after proc name:%s\n",myproc()->name);
     if (to_swap) {
         p->swaped_pages_arr[index_to_swap].pte = pte_to_page_out;
     } else {
@@ -713,19 +717,19 @@ turn_off_a_flag(pte_t* pte){
 pte_t* get_page_to_page_out(struct proc* p){
 
     int index = 0;
-////#if SELECTION != SCFIFO && SELECTION != NONE
+#if SELECTION == LIFO
 //    cprintf("lifo proc name:%s\n",myproc()->name);
-//    int max =0;
-//    for(int i=0; i< p->pysc_pages_num ; i++ ){
-//            if (p->pysc_page_arr[i].creation_time > max){
-//                max = p->pysc_page_arr[i].creation_time;
-//                index = i;
-//            }
-//    }
-////#endif
+    int max =0;
+    for(int i=0; i< p->pysc_pages_num ; i++ ){
+            if (p->pysc_page_arr[i].creation_time > max){
+                max = p->pysc_page_arr[i].creation_time;
+                index = i;
+            }
+    }
+#endif
 
-//
-//#if SELECTION != LIFO && SELECTION != NONE
+
+#if SELECTION == SCFIFO
     cprintf("scfifo proc name:%s\n",myproc()->name);
 //    for (int i = 0; i < MAX_PSYC_PAGES; i++) {
 //            cprintf("pte[%d] = %x\n", i, p->pysc_page_arr[i].pte);
@@ -735,9 +739,9 @@ pte_t* get_page_to_page_out(struct proc* p){
         turn_off_a_flag(p->pysc_page_arr[index].pte);
         p->pysc_page_arr[index].creation_time = myproc()->creation_counter++;
         index = find_page_min_creation(p);
-//        cprintf("scfifo while proc name:%s , pte:%x\n",myproc()->name,p->pysc_page_arr[index].pte);
+        cprintf("scfifo while proc name:%s , pte:%x\n",myproc()->name,p->pysc_page_arr[index].pte);
     }
-//#endif
+#endif
     return p->pysc_page_arr[index].pte;
 }
 

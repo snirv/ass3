@@ -166,8 +166,9 @@ pmalloc(void)
 
 
 int
-protect_page_ass(void* ap){
-    if((uint)(ap-8) % PGSIZE != 0){
+protect_page(void* ap){
+  if((uint)(ap-8) % PGSIZE != 0){
+    //if((uint)(ap) % PGSIZE != 0){
         printf(1, "protect_page failed: ap mod 4096 =! 0\n");
         return -1;
     }

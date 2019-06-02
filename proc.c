@@ -306,7 +306,7 @@ exit(void)
 
 
 #if VERBOSE_PRINT != FALSE
-    verbose_procdump();
+//    verbose_procdump();
 #endif
 
 

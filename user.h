@@ -59,6 +59,6 @@ void* memset(void*, int, unsigned int);
 void* malloc(unsigned int);
 void free(void*);
 int atoi(const char*);
-int   protect_page(void* ap);
+int protect_page(void* ap);
 void* pmalloc(void);
 int pfree(void*);
