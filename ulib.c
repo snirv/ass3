@@ -50,7 +50,7 @@ strchr(const char *s, char c)
 }
 
 char*
-gets(char *buf, int max)
+    gets(char *buf, int max)
 {
   int i, cc;
   char c;
